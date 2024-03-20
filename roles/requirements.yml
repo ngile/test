@@ -1,5 +1,5 @@
 ---
-# Download and install the following roles:
+# Download and install roles
 
 - name: ansible_docker
   version: main
