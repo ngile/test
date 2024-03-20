@@ -1,0 +1,46 @@
+---
+# tasks file for ansible_docker
+
+- name: Create system groups
+  become: true
+  group:
+    name: "{{ item.name }}"
+    gid: "{{ item.gid }}"
+    state: present
+  loop:
+    - { name: "admins", gid: 988 }
+    - { name: "docker", gid: 989 }
+
+- name: Create system users
+  become: true
+  user:
+    name: "{{ item.name }}"
+    comment: "{{ item.desc }}"
+    groups: "{{ item.groups }}"
+    state: present
+    shell: /bin/bash
+  loop:
+    - { name: "{{ config_user }}", groups: "admins,docker,sudo", desc: "Configuration System Account" }
+
+- name: Add docker registry key
+  become: true
+  apt_key:
+    id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+    url: "https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg"
+    state: present
+
+- name: Add docker registry
+  become: true
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable"
+    state: present
+
+- name: Install docker packages
+  become: true
+  package:
+    name:
+      - python3-netaddr
+      - python3-docker
+      - docker-ce
+      - containerd.io
+      - build-essential
